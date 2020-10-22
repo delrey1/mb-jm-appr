@@ -1,0 +1,33 @@
+version: '3.7'
+
+volumes:
+    grafana_data: {}
+    influx_data: {}
+    chronograf_data: {}
+
+networks:
+    traefik:
+        driver: bridge
+
+services:
+  grafana:
+    image: grafana/grafana
+    user: "104"
+    links:
+      - influxdb:influxdb
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+    restart: always
+  
+  influxdb:
+    image: influxdb
+    volumes:
+      - influx_data:/var/lib/influxdb
+    environment:
+      - INFLUXDB_DB=datasource
+    ports:
+      - 8086:8086
+    restart: always
