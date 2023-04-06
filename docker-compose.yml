@@ -6,13 +6,18 @@ volumes:
     chronograf_data: {}
 
 networks:
-    traefik:
-        driver: bridge
+  traefik_internal:
+      driver: bridge
+      name: temp_traefik_internal
+
+
 
 services:
   grafana:
     image: grafana/grafana
     user: "104"
+    networks:
+      - traefik_internal
     links:
       - influxdb:influxdb
     ports:
@@ -21,13 +26,45 @@ services:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning/:/etc/grafana/provisioning/
     restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=temp_traefik_internal"
+      - "traefik.http.routers.reporting-grafana.entrypoints=http"
+      - "traefik.http.routers.reporting-grafana.rule=Host(`grafana.reporting`)"
+      - "traefik.http.routers.reporting-grafana-secure.entrypoints=https"
+      - "traefik.http.routers.reporting-grafana-secure.rule=Host(`grafana.reporting`)"
+      - "traefik.http.routers.reporting-grafana-secure.tls=true"
+      # - "traefik.http.routers.reporting-grafana-secure.tls.certresolver=myresolver"
+      - "traefik.http.services.reporting-grafana.loadbalancer.server.port=3000"
+
   
   influxdb:
     image: influxdb:1.8
     volumes:
       - influx_data:/var/lib/influxdb
+    networks:
+      - traefik_internal
     environment:
       - INFLUXDB_DB=datasource
     ports:
       - 8086:8086
     restart: always
+  traefik:
+    image: "traefik:v2.9"
+    networks:
+        - traefik_internal
+    restart:  always
+    ports:
+        # - "80:80"
+        - "8080:8080"
+        - "443:443"
+    env_file: 
+        - /etc/cloudflare/credential.ini
+    volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - ./traefik/traefik.toml:/traefik.toml
+    logging:
+        options:
+            max-size: "200k"
+            max-file: "10"
+

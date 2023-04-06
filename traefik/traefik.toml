@@ -1,0 +1,43 @@
+defaultEntryPoints = ["http", "https"]
+logLevel = "DEBUG"
+# logLevel = "WARN"
+debug=true
+
+[api]
+    dashboard = true
+    insecure = true
+    debug = false
+
+[serversTransport]
+    maxIdleConnsPerHost  = 100000
+
+[metrics.prometheus]
+    buckets = [0.1,0.3,1.2,5.0]
+    entryPoint = "metrics"
+
+[entryPoints]
+  [entryPoints.http]
+    address = ":80"
+    # [entryPoints.http.redirect]
+    #   entryPoint = "https"
+    #   permanent = true
+
+  [entryPoints.https]
+    address = ":443"
+
+# https://docs.traefik.io/v2.0/observability/access-logs/
+# [accessLog]
+#     filePath = "/logs/traefik-access.log"
+#     bufferingSize = 100
+
+[retry]
+attempts = 3
+maxMem = 3
+
+[providers.docker]
+    endpoint = "unix:///var/run/docker.sock"
+    watch = true
+    exposedbydefault = false
+[providers.file] # https://github.com/containous/traefik/issues/5195
+    filename = "/traefik.toml"
+    watch = true
