@@ -58,8 +58,8 @@ services:
         # - "80:80"
         - "8080:8080"
         - "443:443"
-    env_file: 
-        - /etc/cloudflare/credential.ini
+    # env_file: 
+    #     - /etc/cloudflare/credential.ini
     volumes:
         - /var/run/docker.sock:/var/run/docker.sock
         - ./traefik/traefik.toml:/traefik.toml
