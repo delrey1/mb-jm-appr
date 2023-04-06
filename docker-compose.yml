@@ -23,7 +23,7 @@ services:
     restart: always
   
   influxdb:
-    image: influxdb
+    image: influxdb:1.8
     volumes:
       - influx_data:/var/lib/influxdb
     environment:
